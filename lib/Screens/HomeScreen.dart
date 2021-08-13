@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
 
                       FutureBuilder(
-                        future: chee() ,
+                        future: fetchData(),
                         initialData: [],
                         builder: (context,snapshot){
                           if(snapshot.connectionState == ConnectionState.done){
@@ -130,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future <List> chee()async{
+  Future <List> fetchData()async{
 
     if(count == 0){
       String tin;
