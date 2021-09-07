@@ -23,9 +23,7 @@ class DirectoryLogic{
         if(entity.path.contains('mp3') ){
           musicFiles.add(entity.path);
         }
-
       },onDone: function,);
-
     }
 
     else{
@@ -33,9 +31,6 @@ class DirectoryLogic{
     }
   }
 
-//  final Directory extDir = await getExternalStorageDirectory();
-//final String dirpath = extDir.path.toString().substring(0,20);
-//  print(dirpath);
 
 
 

@@ -1,24 +1,31 @@
 import 'package:flutter/material.dart';
 
-class CounterText extends StatelessWidget {
+class CounterText extends StatefulWidget {
 
-
-
-  int value;
+  final value;
   CounterText({this.value});
+
+  @override
+  _CounterTextState createState() => _CounterTextState();
+}
+
+class _CounterTextState extends State<CounterText> {
+
+  @override
+  void initState() {
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
 
-    int minute = (value/60).floor();
-    int second = value%60;
+    int minute = (widget.value/60).floor();
+    int second = widget.value % 60;
+    String secondCheck = (second.toString().length == 1)?'0$second': second.toString();
 
-    String second_check =  (second.toString().length == 1)?'0$second': second.toString();
-
-    return Text('$minute:$second_check',
+    return Text('$minute:$secondCheck',
       style: TextStyle(
           color: Colors.white
       ),);
   }
-
 
 }

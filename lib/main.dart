@@ -12,16 +12,20 @@ import 'Screens/WelcomeScreen.dart';
 void main() {
 
   runApp(ChangeNotifierProvider<Data>(
-    create: (context)=> Data(),
-    child: MaterialApp(
-      initialRoute: '/',
+    create: (_)=> Data(),
+    builder: (context,child){
 
-      routes: {
-        '/':(context) => WelcomeScreen(),
-        '/first':(context) => HomeScreen(),
-        '/second':(context) => MusicScreen(),
-      },
-      debugShowCheckedModeBanner: false,
-    ),
+      return MaterialApp(
+        initialRoute: '/',
+        routes: {
+          '/':(context) => WelcomeScreen(),
+          '/first':(context) => HomeScreen(),
+          '/second':(context) => MusicScreen(),
+        },
+
+        debugShowCheckedModeBanner: false,
+      );
+    },
+
   ));
 }

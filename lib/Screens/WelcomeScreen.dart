@@ -1,17 +1,12 @@
-import 'package:audioplayers/audio_cache.dart';
-import 'package:audioplayers/audioplayers.dart';
+
 import 'package:flutter/material.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
-import 'file:///C:/Users/xeroes/AndroidStudioProjects/momusik/lib/Services/DirectoryLogic.dart';
-import 'file:///C:/Users/xeroes/AndroidStudioProjects/momusik/lib/Screens/HomeScreen.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:momusik/Services/DirectoryLogic.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-
 import '../Services/Arguments.dart';
 
 
 class WelcomeScreen extends StatefulWidget {
-
 
   @override
   _WelcomeScreenState createState() => _WelcomeScreenState();
@@ -22,6 +17,7 @@ DirectoryLogic directoryLogic = DirectoryLogic();
 class _WelcomeScreenState extends State<WelcomeScreen> {
 
   bool isVisible = false;
+  BuildContext context;
 
   Widget build(BuildContext context) {
 
@@ -29,21 +25,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       body: Container(
         child: Center(
           child: Stack(
-
-            children:
-            [
+            children: [
               Container(
                 alignment: Alignment.center,
                 height: MediaQuery.of(context).size.height * 0.3,
                 width: MediaQuery.of(context).size.width * 0.7,
-                child: WelcomeLogo((){
-
+                child: welcomeLogo((){
                   setState(() {
                     isVisible = true;
-                    nextSlide(context);
+                    moveToNextScreen(context);
                   });
 
-                  // print("object");
                 }),
 
               ),
@@ -78,11 +70,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
 
-
-  void nextSlide(BuildContext context)async{
+//fetch music files and move to home screen
+  void moveToNextScreen(BuildContext context)async{
     await directoryLogic.fetchData((){
       print(directoryLogic.musicFiles,);
-
       Navigator.pushReplacementNamed(context, "/first",arguments:
       ScreenArguments(list: directoryLogic.musicFiles));
     },context);
@@ -92,7 +83,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
 
 
-  static Widget WelcomeLogo(Function function) {
+Widget welcomeLogo(Function function) {
     return TypewriterAnimatedTextKit(
       textAlign: TextAlign.center,
       alignment: Alignment.center,
@@ -100,11 +91,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       totalRepeatCount: 1,
       speed: Duration(milliseconds: 200),
       text: ['Mo-Music🎵'],
-      textStyle: TextStyle(fontSize: 40.0,
-          fontWeight: FontWeight.w900,
-          fontFamily: 'Italianno',
-          textBaseline: TextBaseline.alphabetic
-      ),
+      textStyle: TextStyle(fontSize: 30.0,
+          fontWeight: FontWeight.w700,
+          textBaseline: TextBaseline.alphabetic,
+          fontFamily: 'IndieFlower',),
 
     );
   }

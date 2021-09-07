@@ -5,14 +5,14 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
+import 'package:momusik/Widgets/HeaderWidget.dart';
+import 'package:momusik/Widgets/MusicList.dart';
 import 'package:provider/provider.dart';
 import 'package:move_to_background/move_to_background.dart';
-
 
 import '../Services/Arguments.dart';
 import '../Services/Data.dart';
 import '../Services/MetaData.dart';
-import '../Widgets/MusicList.dart';
 import '../constants/constants.dart';
 
 
@@ -25,22 +25,28 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
+  ScreenArguments args;
   List <Metadata> metaFiles = [];
-  Metadata metaData;
   static List <String> musicFiles = [];
-  var retriever = new MetadataRetriever();
   AudioPlayer audioPlayer = AudioPlayer();
   MetaDataWork metaDataWork = MetaDataWork();
-  int count =0;
+  Data provider;
 
+  @override
+  void initState() {
+    super.initState();
+
+  }
 
   @override
   Widget build(BuildContext context) {
-
+    args = ModalRoute.of(context).settings.arguments;
+    provider = Provider.of<Data>(context,listen: false);
     return WillPopScope(
       onWillPop: ()async{
-        if(Provider.of<Data>(context).playing){
-          MoveToBackground.moveTaskToBack();
+        if(provider.playing){
+          MoveToBackground.moveTaskToBack(); //minimize app if track is currently playing
           return false;
         }else{
           return true;
@@ -50,46 +56,26 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Scaffold(
         body: SafeArea(
           child: Container(
-
             decoration: gradient_color,
             child: Column(
               children: [
                 Expanded(
-                  flex: 9,
+                  flex: 3,
                   child: Column(
                     children: [
-                      Container(
-                        padding: EdgeInsets.only(left: 10.0,top: 50.0),
-                        alignment: Alignment.topLeft,
-                        child: Text('Mo-Music🎵',
-                          style:TextStyle(fontSize: 30.0,
-                              fontWeight: FontWeight.w900,
-                              fontFamily: 'Italianno',
-                              color: Colors.white),),
-                        decoration: BoxDecoration(
-                          image: DecorationImage(image: AssetImage('images/photo1.png'),
-                              fit: BoxFit.cover,
-                              colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.2), BlendMode.dstATop)),
-                        ),
-                      ),
-
+                      HeaderWidget(),
                       FutureBuilder(
                         future: fetchData(),
-                        initialData: [],
                         builder: (context,snapshot){
                           if(snapshot.connectionState == ConnectionState.done){
-
-
                             return musicFiles.isNotEmpty? MusicList(metaFiles: metaFiles,
                               musicFiles: musicFiles,
-                              audioPlayer: audioPlayer,
-
-                            ):  Container(
+                              audioPlayer: audioPlayer,):
+                            Container(
                               height: MediaQuery.of(context).size.height* 0.5,
                               width: MediaQuery.of(context).size.width *0.8,
                               child: Center(
-                                  child: Text(""
-                                      "Couldn't fetch music files (Android version < 11)"
+                                  child: Text("Couldn't fetch music files"
                                     ,style: TextStyle(
                                         fontSize: 17.0,
                                         color: Colors.white
@@ -109,7 +95,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Center(
                                 child: SpinKitCircle(
                                   color: Colors.white,
-
                                 ),
                               ),
                             );
@@ -130,27 +115,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  //fetches and returns metadata for each music file
   Future <List> fetchData()async{
-
-    if(count == 0){
-      String tin;
-      final ScreenArguments args = ModalRoute.of(context).settings.arguments;
       musicFiles.addAll(args.list);
-      print(ModalRoute.of(context).settings.name);
-      for(tin in musicFiles){
-        await metaDataWork.fetchMetaData(tin);
+      for(String item in musicFiles){
+        await metaDataWork.fetchMetaData(item);
         metaFiles.add(metaDataWork.metaData);
-        count++;
-
       }
       return metaFiles;
-    }
-
-
-    else{
-
-    }
-
   }
 }
+
 

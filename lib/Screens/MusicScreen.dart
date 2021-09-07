@@ -1,10 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audio_cache.dart';
+import 'package:momusik/Services/HelperFunctions.dart';
 import 'package:provider/provider.dart';
-
 import '../Services/Arguments.dart';
 import '../Services/CounterText.dart';
 import '../Services/Data.dart';
@@ -16,21 +15,17 @@ class MusicScreen extends StatefulWidget {
   _MusicScreenState createState() => _MusicScreenState();
 }
 
-
-
 class _MusicScreenState extends State<MusicScreen> {
 
   Duration _duration = new Duration();
   Duration _position = new Duration();
-
   AudioCache audioCache = AudioCache();
-  IconData icon;
-  int currentFile;
-  bool repeat;
+  Data data;
 
 
   @override
   void initState() {
+    super.initState();
     Future.delayed(Duration.zero,(){
       final SecondArguments args = ModalRoute.of(context).settings.arguments;
       initPlayer(args);
@@ -38,255 +33,220 @@ class _MusicScreenState extends State<MusicScreen> {
 
   }
 
-  void repeatButton(){
-    if(repeat == true){
-      repeat = false;
-    }
-    else{
-      repeat = true;
-    }
-  }
-
-
+   //handles operations when play or pause button is clicked
   void playButton(SecondArguments args) {
-
-    if (Provider.of<Data>(context).playing == false) {
+    if (data.playing == false) {
       setState(() {
-        args.audioPlayer.play(args.musicFiles[Provider.of<Data>(context).selected], isLocal: true);
-        icon = Icons.pause;
-        Provider.of<Data>(context).changeState();
+        args.audioPlayer.play(args.musicFiles[data.selected], isLocal: true);
+        data.changeState();
       });
     }
-    else {
 
+    else {
       args.audioPlayer.pause();
       setState(() {
-        icon = Icons.play_arrow;
-        Provider.of<Data>(context).changeState();
+        data.changeState();
       });
     }
   }
 
+  //handles operation when the next button is clicked
   void nextButton(SecondArguments args) {
+    data.updateStateToPlaying();   //sets playing state to true
 
-    if ( Provider.of<Data>(context).selected == args.musicFiles.length - 1) {
-
+    if (data.selected == args.musicFiles.length - 1) {
+          return;
     }
-
     else {
       setState(() {
         args.audioPlayer.stop();
-        icon = Icons.pause;
-        Provider.of<Data>(context).nextWave();
-        currentFile = Provider.of<Data>(context).selected;
-        args.audioPlayer.play(args.musicFiles[Provider.of<Data>(context).selected], isLocal: true);
+        data.nextWave();         //moves to next track
+        args.audioPlayer.play(args.musicFiles[data.selected], isLocal: true);
       });
     }
   }
 
   void previousButton(SecondArguments args) {
-    if (Provider.of<Data>(context).selected == 0) {
-
+    data.updateStateToPlaying();      //sets playing state to true
+    if (data.selected == 0) {
+          return;
     }
-
     else {
       setState(() {
         args.audioPlayer.stop();
-        icon = Icons.pause;
-        Provider.of<Data>(context).previousWave();
-        currentFile = Provider.of<Data>(context).selected;
-        args.audioPlayer.play(args.musicFiles[Provider.of<Data>(context).selected], isLocal: true);
+        data.previousWave();          //moves to previous track
+        args.audioPlayer.play(args.musicFiles[data.selected], isLocal: true);
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+   data = Provider.of<Data>(context,listen: false);
     SecondArguments args = ModalRoute.of(context).settings.arguments;
-    currentFile = Provider.of<Data>(context).selected;
-    repeat = Provider.of<Data>(context).repeat;
 
-    icon = Provider.of<Data>(context).playing? Icons.pause: Icons.play_arrow;
-    int index1 = args.musicFiles[Provider.of<Data>(context).selected].lastIndexOf("/");
-    int index2 = args.musicFiles[Provider.of<Data>(context).selected].indexOf(".mp3");
-    String rawRaw = args.musicFiles[Provider.of<Data>(context).selected].substring(
-        index1 + 1, index2);
+    return Scaffold(
+      body: Container(
+        padding: EdgeInsets.only(
+            left: 10.0, right: 10, top: 75.0, bottom: 10.0),
+        decoration: gradient_color,
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        child: Column(
 
-    return WillPopScope(
-      onWillPop: () async{
-        Navigator.pop(context,currentFile);
-        return false;
-      },
-      child: Scaffold(
-        body: Container(
-          padding: EdgeInsets.only(
-              left: 10.0, right: 10, top: 75.0, bottom: 10.0),
-          decoration: gradient_color,
-          width: MediaQuery
-              .of(context)
-              .size
-              .width,
-          height: MediaQuery
-              .of(context)
-              .size
-              .height,
-          child: Column(
+          children: [
+            Expanded(
+              flex: 10,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CircleAvatar(
+                    radius: 75.0,
+                    backgroundImage: AssetImage('images/moimage.png'),
+                  ),
 
-            children: [
-              Expanded(
-                flex: 10,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CircleAvatar(
-                      radius: 75.0,
-                      backgroundImage: AssetImage('images/moimage.png'),
-
-                    ),
-
-                    SizedBox(
-                      height: 20.0,
-                    ),
-                    Flexible(
-                      child: Text(args.metaFiles[Provider.of<Data>(context).selected].trackName == null ?
-                      rawRaw : args.metaFiles[Provider.of<Data>(context).selected].trackName,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.w500
-                        ),),
-                    ),
-                    SizedBox(
-                      height: 8.0,
-                    ),
-                    Text(
-                      args.metaFiles[Provider.of<Data>(context).selected].trackArtistNames == null
-                          ?
-                      "Unknown"
-                          : args.metaFiles[Provider.of<Data>(context).selected]
-                          .trackArtistNames[0],
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  Flexible(
+                    child: Text(args.metaFiles[data.selected].trackName == null?
+                    HelperFunction().getRawFileName2(args.musicFiles[data.selected],args,data) : args.metaFiles[data.selected].trackName,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                          color: Colors.white54,
-                          fontSize: 14.0,
+                          color: Colors.white,
+                          fontSize: 16.0,
                           fontWeight: FontWeight.w500
                       ),),
-                    SizedBox(
-                      height: MediaQuery
-                          .of(context)
-                          .size
-                          .height * 0.2,
-                    ),
+                  ),
+                  SizedBox(
+                    height: 8.0,
+                  ),
+                  Text(args.metaFiles[data.selected].trackArtistNames == null ? "Unknown"
+                        : args.metaFiles[data.selected].trackArtistNames[0],
+                    style: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w500
+                    ),),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.2,
+                  ),
+                ],
 
-                  ],
-
-                ),
               ),
-              Expanded(
-                flex: 4,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Row(
+            ),
+            Expanded(
+              flex: 4,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(child: CounterText(value: _position.inSeconds,),
+                        flex: 1,),
+                      Expanded(
+                        child: Slider(
+                          value: _position.inSeconds.toDouble(),
+                          activeColor: Colors.pinkAccent,
+                          inactiveColor: Colors.grey,
+                          onChanged: (double value) {
+                            setState(() {
+                              seekToSecond(value.roundToDouble().toInt(),args);
+                              value = value;
+                            });
+                          },
+                          min: 0.0,
+                          max: _duration.inSeconds.toDouble()>_position.inSeconds.toDouble()?
+                          _duration.inSeconds.toDouble():_position.inSeconds.toDouble(),
 
+                        ),
+                        flex: 7,),
+                      Expanded(child: CounterText(value: _duration.inSeconds ,),
+                        flex: 1,),
+                    ],
+                  ),
+
+                  SizedBox(
+                    height: 20.0,
+                  ),
+
+                  Flexible(
+
+                    child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Expanded(child: CounterText(value: _position.inSeconds,),
-                          flex: 1,),
-                        Expanded(
-                          child: Slider(
-                            value: _position.inSeconds.toDouble(),
-                            activeColor: Colors.pinkAccent,
-                            inactiveColor: Colors.grey,
-                            onChanged: (double value) {
-                              setState(() {
-                                seekToSecond(value.roundToDouble().toInt(),args);
-                                value = value;
-                              });
-                            },
-                            min: 0.0,
-                            max: _duration.inSeconds.toDouble()>_position.inSeconds.toDouble()?
-                            _duration.inSeconds.toDouble():_position.inSeconds.toDouble(),
+                        IconButton(
+                          icon: Icon(Icons.shuffle,
+                            color: Colors.white,),
+                          onPressed: null,
+                        ),
 
+                        IconButton(
+                          icon: Icon(Icons.fast_rewind,
+                            color: Colors.white,),
+                          onPressed: () {
+                            previousButton(args);
+                          },
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.all(
+                                  Radius.circular(30.0)),
+                              color: Colors.pinkAccent,
+                              boxShadow: [BoxShadow(
+                                color: Colors.grey.withOpacity(0.7),
+                                blurRadius: 10.0,
+                                spreadRadius: 0.0,
+
+
+                              )
+                              ]
                           ),
-                          flex: 7,),
-                        Expanded(child: CounterText(value: _duration.inSeconds ,),
-                          flex: 1,),
-                      ],
-                    ),
+                          child: Consumer<Data>(
+                            builder: (__,providerData,_){
+                              return IconButton(
+                                icon: Icon(providerData.playing?Icons.pause:Icons.play_arrow),
+                                color: Colors.white,
+                                onPressed: () {
+                                  playButton(args);
 
-                    SizedBox(
-                      height: 20.0,
-                    ),
-
-                    Flexible(
-
-                      child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.shuffle,
-                              color: Colors.white,),
-                            onPressed: () {
-                            },
-                          ),
-
-                          IconButton(
-                            icon: Icon(Icons.fast_rewind,
-                              color: Colors.white,),
-                            onPressed: () {
-                              previousButton(args);
+                                },);
                             },
                           ),
-                          Container(
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.all(
-                                    Radius.circular(30.0)),
-                                color: Colors.pinkAccent,
-                                boxShadow: [BoxShadow(
-                                  color: Colors.grey.withOpacity(0.7),
-                                  blurRadius: 10.0,
-                                  spreadRadius: 0.0,
 
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.fast_forward,
+                            color: Colors.white,),
+                          onPressed: () {
+                            nextButton(args);
+                          },
+                        ),
 
-                                )
-                                ]
-                            ),
-                            child: IconButton(icon: Icon(icon),
-                              color: Colors.white,
+                        Consumer<Data>(
+                          builder: (context,providerData,_){
+                            return IconButton(
+                              icon: Icon(providerData.repeat?Icons.repeat_one:Icons.repeat,
+                                color: Colors.white,),
                               onPressed: () {
-                                playButton(args);
+                                providerData.changeRepeat();  //sets track repeat state to true or false
+                              },
+                            );
+                          },
 
-                              },),
+                        ),
 
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.fast_forward,
-                              color: Colors.white,),
-                            onPressed: () {
-                              nextButton(args);
-                            },
-                          ),
-
-                          IconButton(
-                            icon: Icon(Provider.of<Data>(context).repeat?Icons.repeat_one:Icons.repeat,
-                              color: Colors.white,),
-                            onPressed: () {
-                              Provider.of<Data>(context).changeRepeat();
-                              repeatButton();
-                            },
-                          ),
-
-                        ],),
-                    ),
-                  ],
-                ),
-              )
-            ],
-          ),
+                      ],),
+                  ),
+                ],
+              ),
+            )
+          ],
         ),
       ),
     );
   }
 
+  //updates slider as tracks plays
   void seekToSecond(int second,SecondArguments args) {
     Duration newDuration = Duration(seconds: second);
     args.audioPlayer.seek(newDuration);
@@ -295,7 +255,6 @@ class _MusicScreenState extends State<MusicScreen> {
 
 
   void initPlayer(SecondArguments args) {
-
     audioCache = new AudioCache(fixedPlayer: args.audioPlayer);
     args.audioPlayer.onDurationChanged.listen((event) {
       if(mounted){
@@ -308,9 +267,7 @@ class _MusicScreenState extends State<MusicScreen> {
       }
     }
     );
-
-
-
+    //listens for change in audio position in music track
     args.audioPlayer.onAudioPositionChanged.listen((event) {
       if(mounted){
         setState(() {
@@ -322,14 +279,14 @@ class _MusicScreenState extends State<MusicScreen> {
       }
     });
 
-
+      //handles operation when music track finish playing
     args.audioPlayer.onPlayerCompletion.listen((event) {
       if(mounted){
-        if(repeat == true){
+        if(data.repeat == true){
           setState(() {
             _position = Duration(seconds: 0);
             args.audioPlayer.seek(_position);
-            args.audioPlayer.play(args.musicFiles[currentFile], isLocal: true);
+            args.audioPlayer.play(args.musicFiles[data.selected], isLocal: true);
           });
         }
         else{
@@ -339,22 +296,21 @@ class _MusicScreenState extends State<MusicScreen> {
         }
       }
       else{
-        if(repeat == true){
+        if(data.repeat == true){
           _position = Duration(seconds: 0);
           args.audioPlayer.seek(_position);
-          args.audioPlayer.play(args.musicFiles[currentFile], isLocal: true);
+          args.audioPlayer.play(args.musicFiles[data.selected], isLocal: true);
         }
         else{
-          if (currentFile == args.musicFiles.length - 1) {
+          if (data.selected == args.musicFiles.length - 1) {
           }
           else {
             args.audioPlayer.stop();
-            icon = Icons.play_arrow;
-            //  currentFile++;
-            //args.audioPlayer.play(args.musicFiles[currentFile], isLocal: true);
           }
         }
       }
     });
   }
+
+
 }

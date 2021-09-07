@@ -4,24 +4,22 @@ class Data extends ChangeNotifier {
 
 
   bool playing = false;
-  int selected;
+  int selected = 0;
   bool repeat = false;
 
 
   void changeState() {
     if (playing == false) {
       playing = true;
-
     }
-
     else {
       playing = false;
     }
     notifyListeners();
   }
 
-  void changeWave(int number){
-    selected = number;
+  void updateStateToPlaying() {
+    playing = true;
     notifyListeners();
   }
 

@@ -1,26 +1,26 @@
-import 'package:audioplayers/audioplayers.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
-import 'file:///C:/Users/xeroes/AndroidStudioProjects/momusik/lib/Services/Data.dart';
-import 'file:///C:/Users/xeroes/AndroidStudioProjects/momusik/lib/Services/Methods.dart';
+import 'package:momusik/Services/Arguments.dart';
+import 'package:momusik/Services/Data.dart';
+import 'package:momusik/Services/HelperFunctions.dart';
+import 'package:momusik/Widgets/MusicTile.dart';
 import 'package:momusik/constants/constants.dart';
 import 'package:provider/provider.dart';
 
-import '../Services/Arguments.dart';
-import 'MusicTile.dart';
-
+import 'BottomBarText.dart';
 
 class MusicList extends StatefulWidget  {
   MusicList({
     @required this.metaFiles,
     @required this.musicFiles,
-    this.audioPlayer
+    this.audioPlayer,
+
   }) ;
 
   final List<Metadata> metaFiles;
   final List<String> musicFiles;
-  static final Method method = Method();
-  AudioPlayer audioPlayer = AudioPlayer();
+  final audioPlayer;
 
   @override
   _MusicListState createState() => _MusicListState();
@@ -28,24 +28,19 @@ class MusicList extends StatefulWidget  {
 
 class _MusicListState extends State<MusicList> {
 
-  //AudioPlayer audioPlayer = AudioPlayer();
-  IconData icon;
-  int value;
-  bool loaded = false;
-  bool loadedstate = false;
+  int value = 0;
+  bool isTrackLoaded = false;
+  Data provider;
 
   @override
   void initState() {
     super.initState();
+    provider = Provider.of<Data>(context,listen: false);
 
-    value = Method().dowork(widget.musicFiles);
   }
 
   @override
   Widget build(BuildContext context) {
-
-    icon = Provider.of<Data>(context).playing? Icons.pause:Icons.play_arrow;
-
     return Flexible(
       child: Padding(
         padding: const EdgeInsets.only(top: 5.0),
@@ -58,37 +53,13 @@ class _MusicListState extends State<MusicList> {
                   padding: const EdgeInsets.only(left: 5.0,right: 5.0),
                   child: GestureDetector(
                     onTap: ()async{
-                      loaded = true;
-
-                      widget.audioPlayer.pause();
-                      widget.audioPlayer.play(widget.musicFiles[i], isLocal: true);
-
-
-                      Provider.of<Data>(context).selected = i;
-
-                      if(!Provider.of<Data>(context).playing){
-                        setState(() {
-                          Provider.of<Data>(context).changeState();
-                          icon = Icons.pause;
-                        });
-                      }
-
-                      final result =  await Navigator.pushNamed(context, "/second",arguments:
+                      onClickEvent(i);
+                      Navigator.pushNamed(context, "/second",arguments:
                       SecondArguments(metaFiles: widget.metaFiles,musicFiles: widget.musicFiles,currentFile: i,audioPlayer: widget.audioPlayer));
+                    },
 
-
-                      setState(() {
-                        Provider.of<Data>(context).selected = result;
-                        print("fgbxdfdfzxdf");
-
-                      });
-
-
-                    }
-                    ,
                     child: MusicTile(trackName: widget.metaFiles[i].trackName,
                       trackDuration: widget.metaFiles[i].trackDuration,
-                      ArtistName: widget.metaFiles[i].trackArtistNames,
                       rawFileName: widget.musicFiles[i],
                       currentFile: i,
                       musicFiles: widget.musicFiles,
@@ -107,20 +78,15 @@ class _MusicListState extends State<MusicList> {
             Expanded(
               flex: 2,
               child: GestureDetector(
-                onTap: ()async{
-                  final result =  await Navigator.pushNamed(context, "/second",arguments:
-                  SecondArguments(metaFiles: widget.metaFiles,musicFiles: widget.musicFiles,currentFile:
-                  Provider.of<Data>(context).selected  == null ? value:Provider.of<Data>(context).selected ,audioPlayer: widget.audioPlayer));
-                  if(result == false){
-                    setState(() {
-                    });
-                  }
+                onTap: (){
+                  Navigator.pushNamed(context, "/second",arguments:
+                  SecondArguments(metaFiles: widget.metaFiles,musicFiles: widget.musicFiles,
+                      currentFile: provider.selected ,audioPlayer: widget.audioPlayer));
 
                 },
                 child: Container(
                   decoration: gradient_color,
                   child: Row(
-
                     children: [
                       Expanded(flex: 8,
                         child: Row(
@@ -138,22 +104,16 @@ class _MusicListState extends State<MusicList> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(Provider.of<Data>(context).selected  == null ? widget.metaFiles[value].trackName == null? MusicList.method.work(widget.musicFiles[value]): widget.metaFiles[value].trackName.length>25
-                                    ?"${widget.metaFiles[value].trackName.substring(0,15)}... ": widget.metaFiles[value].trackName:
-                                widget.metaFiles[Provider.of<Data>(context).selected ].trackName == null? MusicList.method.work(widget.musicFiles[Provider.of<Data>(context).selected ]): widget.metaFiles[Provider.of<Data>(context).selected ].trackName.length>25
-                                    ?"${widget.metaFiles[Provider.of<Data>(context).selected ].trackName.substring(0,15)}... ": widget.metaFiles[Provider.of<Data>(context).selected ].trackName,
-
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 15.0,
-                                      color: Colors.white70
-                                  ),),
+                                BottomBarText(
+                                  metaFiles: widget.metaFiles,
+                                  rawFileString: HelperFunction().getRawFilename(widget.musicFiles[provider.selected]),
+                                  currentNo: provider.selected,
+                                ),
                                 SizedBox(
                                   height: 2.0,
                                 ),
-                                Text(Provider.of<Data>(context).selected  == null ? widget.metaFiles[value].trackArtistNames != null?
-                                widget.metaFiles[value].trackArtistNames[0]:"Unknown": widget.metaFiles[Provider.of<Data>(context).selected].trackArtistNames != null?
-                                widget.metaFiles[Provider.of<Data>(context).selected].trackArtistNames[0]:"Unknown",
+                                Text(widget.metaFiles[provider.selected].trackArtistNames != null?
+                                widget.metaFiles[provider.selected].trackArtistNames[0]:"Unknown",
                                   style: TextStyle(
                                       fontSize: 12.0,
                                       color: Colors.white70
@@ -165,46 +125,19 @@ class _MusicListState extends State<MusicList> {
 
 
                       Expanded(flex: 2,
-                        child: IconButton(
-                          icon: Icon(icon,
-                            color: Colors.blue[200],
-                          ),
-                          onPressed: (){
-                            setState(() {
+                        child: Consumer<Data>(
+                          builder: (__,providerData,_){
+                            return IconButton(
+                              icon: Icon(providerData.playing?Icons.pause:Icons.play_arrow,
+                                color: Colors.blue[200],
+                              ),
+                              onPressed: (){
+                               handleBottomIconState(providerData);
+                              },
+                              iconSize: 30.0,
 
-                              if(loaded == false){
-                                if( Provider.of<Data>(context).playing == false){
-                                  widget.audioPlayer.play(widget.musicFiles[value], isLocal: true);
-                                  loadedstate = true;
-                                  print('1st');
-                                  Provider.of<Data>(context).changeState();
-                                }
-                                else{
-                                  widget.audioPlayer.pause();
-                                  loadedstate = false;
-                                  print('2nd');
-                                  Provider.of<Data>(context).changeState();
-                                }
-
-                              }
-                              else{
-                                if( Provider.of<Data>(context).playing == true){
-
-                                  Provider.of<Data>(context).changeState();
-                                  icon = Icons.play_arrow;
-                                  widget.audioPlayer.pause();
-                                }
-                                else{
-                                  Provider.of<Data>(context).changeState();
-                                  icon = Icons.pause;
-                                  widget.audioPlayer.play(widget.musicFiles[ Provider.of<Data>(context).selected], isLocal: true);
-                                }
-                              }
-
-                            });
-                            print("e suppose stop");
+                            );
                           },
-                          iconSize: 30.0,
 
                         ),)],
                   ),
@@ -215,5 +148,48 @@ class _MusicListState extends State<MusicList> {
       ),
     );
   }
-}
 
+  //handles operation when an item from list of music
+  //tracks is clicked
+  void onClickEvent(int i){
+    isTrackLoaded = true;
+
+    widget.audioPlayer.pause();  //pauses audio if a music track was playing previously
+    widget.audioPlayer.play(widget.musicFiles[i], isLocal: true);
+    provider.selected = i;      //updates selected music index
+
+    if(!provider.playing){     //changes playing state if music track wasn't playing previously
+      setState(() {
+        provider.changeState();
+      });
+    }
+  }
+
+
+  //updates icon according to the playing state
+  void handleBottomIconState(providerData){
+    setState(() {
+      if(isTrackLoaded == false){
+        if(providerData.playing== false){
+          widget.audioPlayer.play(widget.musicFiles[value], isLocal: true);
+          provider.changeState();
+        }
+        else{
+          widget.audioPlayer.pause();
+          provider.changeState();
+        }
+
+      }
+      else{
+        if(provider.playing == true){
+          provider.changeState();
+          widget.audioPlayer.pause();
+        }
+        else{
+          provider.changeState();
+          widget.audioPlayer.play(widget.musicFiles[provider.selected], isLocal: true);
+        }
+      }
+    });
+  }
+}
