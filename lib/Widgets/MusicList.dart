@@ -104,20 +104,30 @@ class _MusicListState extends State<MusicList> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                BottomBarText(
-                                  metaFiles: widget.metaFiles,
-                                  rawFileString: HelperFunction().getRawFilename(widget.musicFiles[provider.selected]),
-                                  currentNo: provider.selected,
+                                Consumer<Data>(
+                                builder: (__,providerData,_){
+                                  return BottomBarText(
+                                    metaFiles: widget.metaFiles,
+                                    rawFileString: HelperFunction().getRawFilename(widget.musicFiles[providerData.selected]),
+                                    currentNo: providerData.selected,
+                                  );
+                                },
+
                                 ),
                                 SizedBox(
                                   height: 2.0,
                                 ),
-                                Text(widget.metaFiles[provider.selected].trackArtistNames != null?
-                                widget.metaFiles[provider.selected].trackArtistNames[0]:"Unknown",
-                                  style: TextStyle(
-                                      fontSize: 12.0,
-                                      color: Colors.white70
-                                  ),),
+                                Consumer<Data>(
+                                  builder: (__,providerData,_){
+                                    return Text(widget.metaFiles[providerData.selected].trackArtistNames != null?
+                                    widget.metaFiles[providerData.selected].trackArtistNames[0]:"Unknown",
+                                      style: TextStyle(
+                                          fontSize: 12.0,
+                                          color: Colors.white70
+                                      ),);
+                                  },
+
+                                ),
                               ],
                             ),
                           ],
@@ -156,7 +166,7 @@ class _MusicListState extends State<MusicList> {
 
     widget.audioPlayer.pause();  //pauses audio if a music track was playing previously
     widget.audioPlayer.play(widget.musicFiles[i], isLocal: true);
-    provider.selected = i;      //updates selected music index
+    provider.changeWave(i);      //updates selected music index
 
     if(!provider.playing){     //changes playing state if music track wasn't playing previously
       setState(() {

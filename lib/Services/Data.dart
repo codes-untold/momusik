@@ -18,6 +18,12 @@ class Data extends ChangeNotifier {
     notifyListeners();
   }
 
+  void changeWave(int currentWave){
+    selected = currentWave;
+    notifyListeners();
+
+  }
+
   void updateStateToPlaying() {
     playing = true;
     notifyListeners();

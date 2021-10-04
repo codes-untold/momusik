@@ -11,7 +11,9 @@ class BottomBarText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(metaFiles[currentNo].trackName == null? rawFileString: metaFiles[currentNo].trackName.length>25
+    return Text(metaFiles[currentNo].trackName == null? rawFileString.toString().length>25?
+    "${rawFileString.toString().substring(0,15)}...": rawFileString
+        : metaFiles[currentNo].trackName.length>25
         ?"${metaFiles[currentNo].trackName.substring(0,15)}... ": metaFiles[currentNo].trackName,
 
       style: TextStyle(
